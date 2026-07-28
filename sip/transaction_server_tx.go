@@ -135,7 +135,11 @@ func (tx *ServerTx) Acks() <-chan *Request {
 func (tx *ServerTx) ackSend(r *Request) {
 	select {
 	case <-tx.done:
-		tx.log.Warn("ACK missed", "callid", r.CallID().Value(), "tx", tx.Key())
+		callID := ""
+		if h := r.CallID(); h != nil {
+			callID = h.Value()
+		}
+		tx.log.Warn("ACK missed", "callid", callID, "tx", tx.Key())
 	case tx.acks <- r:
 	}
 }

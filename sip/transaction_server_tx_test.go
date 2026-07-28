@@ -180,6 +180,18 @@ func TestServerTransactionFSMInvite(t *testing.T) {
 	})
 }
 
+func TestServerTransactionAckSendMissingCallID(t *testing.T) {
+	req, _, _ := testCreateInvite(t, "sip:127.0.0.99:5060", "udp", "127.0.0.2:5060")
+	tx := NewServerTx("123", req, nil, slog.Default())
+	ack := NewRequest(ACK, req.Recipient)
+
+	close(tx.done)
+
+	require.NotPanics(t, func() {
+		tx.ackSend(ack)
+	})
+}
+
 func TestServerTransactionContext(t *testing.T) {
 	req, _, _ := testCreateInvite(t, "sip:127.0.0.99:5060", "udp", "127.0.0.2:5060")
 	tx := NewServerTx("123", req, nil, slog.Default())
