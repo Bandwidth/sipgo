@@ -38,7 +38,11 @@ func (c *DialogUA) ReadInvite(inviteRequest *sip.Request, tx sip.ServerTransacti
 	}
 	// As we are modifying request we need to perform shallow clone to avoid transaction races
 	inviteReq := inviteRequest.Clone()
-	inviteReq.To().Params.Add("tag", uuid.String())
+	to := inviteReq.To()
+	if to == nil {
+		return nil, fmt.Errorf("no To header present")
+	}
+	to.Params.Add("tag", uuid.String())
 	id, err := sip.DialogIDFromRequestUAS(inviteReq)
 	if err != nil {
 		return nil, err
