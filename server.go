@@ -252,7 +252,7 @@ func (srv *Server) handleRequest(req *sip.Request, tx *sip.ServerTx) {
 	handler(req, tx)
 	if tx != nil {
 		// Must be called to prevent any transaction leaks
-		tx.TerminateGracefully()
+		tx.Cleanup()
 	}
 }
 

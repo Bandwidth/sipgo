@@ -165,8 +165,16 @@ func (tx *ServerTx) Terminate() {
 	}
 }
 
-// TerminateGracefully allows retransmission to happen before shuting down transaction
-func (tx *ServerTx) TerminateGracefully() {
+// Cleanup releases the transaction once the user handler is done with it, without
+// blocking. It must be called for every server transaction to prevent leaks.
+//
+// On reliable transports, or when no final response was sent, the transaction is
+// terminated immediately. On unreliable transports after a final response it is left
+// alive: RFC 3261 timers G/H/I/J and RFC 6026 timer L are already armed on
+// time.AfterFunc and own both retransmission of the final response and eventual
+// termination. Waiting on Done() contributes nothing to that, and parks one goroutine
+// per transaction for up to 64*T1.
+func (tx *ServerTx) Cleanup() {
 	if tx.reliable {
 		// reliable transports have no retransmission, so it is better just to terminate
 		tx.Terminate()
@@ -179,8 +187,16 @@ func (tx *ServerTx) TerminateGracefully() {
 	tx.fsmMu.Unlock()
 	if !finalized {
 		tx.Terminate()
-		return
 	}
+}
+
+// TerminateGracefully allows retransmission to happen before shuting down transaction
+//
+// Deprecated: use [ServerTx.Cleanup]. This blocks the caller until the transaction
+// terminates, which on unreliable transports is up to 64*T1 after the final response.
+// The SIP timers own termination on their own.
+func (tx *ServerTx) TerminateGracefully() {
+	tx.Cleanup()
 	tx.log.Debug("Server transaction waiting termination")
 	<-tx.Done()
 }
