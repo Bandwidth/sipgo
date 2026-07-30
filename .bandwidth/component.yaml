@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  schemaVersion: v1.0.0
+  name: sipgo
+  description: Forked from https://github.com/emiago/sipgo
+  annotations:
+    github.com/project-slug: Bandwidth/sipgo
+    bandwidth.com/environment: production
+  organization: BW
+  costCenter: Development - Voice
+  platformType: N/A
+  buildPlatform: GitHub Actions
+spec:
+  type: Library
+  owner: github/band-programmable-voice
+  lifecycle: Prototype
+  dependsOn:
+    - resource:platform/GitHub Actions
+    - resource:cost-center/Development - Voice
